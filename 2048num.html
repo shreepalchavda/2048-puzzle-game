@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2048 Number Puzzle</title>
+
+<style>
+:root{
+  --bg:#faf8ef;
+  --board:#bbada0;
+  --tile:#cdc1b4;
+  --text:#776e65;
+  --btn:#8f7a66;
+}
+body.dark{
+  --bg:#121212;
+  --board:#1f1f1f;
+  --tile:#333;
+  --text:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.screen{
+  display:none;
+  width:100%;
+  max-width:420px;
+  padding:20px;
+  text-align:center;
+}
+.active{display:block}
+h1,h2{margin-bottom:20px}
+button{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border:none;
+  border-radius:8px;
+  background:var(--btn);
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.topbar button{
+  width:auto;
+  padding:6px 10px;
+  font-size:14px;
+}
+.scores{display:flex;gap:10px}
+.box{
+  background:var(--board);
+  padding:6px 10px;
+  border-radius:6px;
+  color:#fff;
+  font-size:14px;
+}
+.board{
+  background:var(--board);
+  border-radius:10px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  touch-action:none;
+}
+.cell{
+  width:100%;
+  padding-top:100%;
+  background:var(--tile);
+  border-radius:6px;
+  position:relative;
+}
+.tile{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  font-weight:bold;
+  background:#eee4da;
+  border-radius:6px;
+  animation:pop .2s ease;
+}
+@keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
+.privacy{text-align:left;font-size:14px;line-height:1.6}
+</style>
+</head>
+
+<body>
+
+<!-- Splash -->
+<div id="splash" class="screen active">
+  <h1>2048 Puzzle</h1>
+  <p>Loading...</p>
+</div>
+
+<!-- Menu -->
+<div id="menu" class="screen">
+  <h2>Main Menu</h2>
+  <button onclick="startGame()">Start Game</button>
+  <button onclick="openPrivacy()">Privacy Policy</button>
+  <button onclick="toggleTheme()">Dark / Light</button>
+</div>
+
+<!-- Game -->
+<div id="game" class="screen">
+  <div class="topbar">
+    <button onclick="goMenu()">⬅ Back</button>
+    <div class="scores">
+      <div class="box">Score<br><span id="score">0</span></div>
+      <div class="box">Best<br><span id="best">0</span></div>
+    </div>
+  </div>
+  <div class="board" id="board"></div>
+</div>
+
+<!-- Game Over -->
+<div id="gameover" class="screen">
+  <h2>Game Over</h2>
+  <p>Your Score</p>
+  <h1 id="finalScore">0</h1>
+  <button onclick="restartGame()">Play Again</button>
+  <button onclick="goMenu()">Main Menu</button>
+</div>
+
+<!-- Privacy Policy -->
+<div id="privacy" class="screen">
+  <h2>Privacy Policy</h2>
+  <div class="privacy">
+    <p>This 2048 Puzzle game does not collect any personal information.</p>
+    <p>No login, no internet, no data sharing.</p>
+    <p>Scores are stored locally on device only.</p>
+    <p>This policy applies to the Android app version.</p>
+  </div>
+  <button onclick="goMenu()">Back to Menu</button>
+</div>
+
+<script>
+const screens={
+  splash:document.getElementById('splash'),
+  menu:document.getElementById('menu'),
+  game:document.getElementById('game'),
+  gameover:document.getElementById('gameover'),
+  privacy:document.getElementById('privacy')
+};
+function show(id){
+  Object.values(screens).forEach(s=>s.classList.remove('active'));
+  screens[id].classList.add('active');
+}
+setTimeout(()=>show('menu'),1500);
+
+function startGame(){show('game');init()}
+function goMenu(){show('menu')}
+function openPrivacy(){show('privacy')}
+function toggleTheme(){document.body.classList.toggle('dark')}
+
+const board=document.getElementById('board');
+const scoreEl=document.getElementById('score');
+const bestEl=document.getElementById('best');
+const finalScore=document.getElementById('finalScore');
+
+let grid=[],score=0;
+bestEl.textContent=localStorage.getItem('best')||0;
+
+function init(){
+  grid=Array(16).fill(0);
+  score=0;
+  scoreEl.textContent=0;
+  addTile();addTile();
+  render();
+}
+
+function addTile(){
+  let e=grid.map((v,i)=>v===0?i:null).filter(v=>v!==null);
+  if(!e.length)return;
+  let i=e[Math.floor(Math.random()*e.length)];
+  grid[i]=Math.random()>0.9?4:2;
+}
+
+function render(){
+  board.innerHTML='';
+  grid.forEach(v=>{
+    const c=document.createElement('div');
+    c.className='cell';
+    if(v){
+      const t=document.createElement('div');
+      t.className='tile';
+      t.textContent=v;
+      c.appendChild(t);
+    }
+    board.appendChild(c);
+  });
+}
+
+function move(dir){
+  let old=[...grid];
+  const slide=r=>{
+    let a=r.filter(v=>v);
+    for(let i=0;i<a.length-1;i++){
+      if(a[i]==a[i+1]){
+        a[i]*=2;score+=a[i];a[i+1]=0;
+        if(navigator.vibrate)navigator.vibrate(30);
+      }
+    }
+    a=a.filter(v=>v);
+    while(a.length<4)a.push(0);
+    return a;
+  };
+  for(let i=0;i<4;i++){
+    let r;
+    if(dir=='left')r=slide(grid.slice(i*4,i*4+4));
+    if(dir=='right')r=slide(grid.slice(i*4,i*4+4).reverse()).reverse();
+    if(dir=='up')r=slide([grid[i],grid[i+4],grid[i+8],grid[i+12]]);
+    if(dir=='down')r=slide([grid[i],grid[i+4],grid[i+8],grid[i+12]].reverse()).reverse();
+    for(let j=0;j<4;j++){
+      let idx=(dir=='up'||dir=='down')?i+j*4:i*4+j;
+      grid[idx]=r[j];
+    }
+  }
+  if(JSON.stringify(old)!==JSON.stringify(grid)){
+    addTile();render();
+    scoreEl.textContent=score;
+    if(score>bestEl.textContent){
+      bestEl.textContent=score;
+      localStorage.setItem('best',score);
+    }
+    if(isGameOver()){
+      finalScore.textContent=score;
+      show('gameover');
+    }
+  }
+}
+
+function isGameOver(){
+  if(grid.includes(0))return false;
+  for(let i=0;i<16;i++){
+    if(i%4<3 && grid[i]==grid[i+1])return false;
+    if(i<12 && grid[i]==grid[i+4])return false;
+  }
+  return true;
+}
+
+function restartGame(){show('game');init();}
+
+let sx,sy;
+board.addEventListener('touchstart',e=>{
+  sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+});
+board.addEventListener('touchend',e=>{
+  let dx=e.changedTouches[0].clientX-sx;
+  let dy=e.changedTouches[0].clientY-sy;
+  Math.abs(dx)>Math.abs(dy)?move(dx>0?'right':'left'):move(dy>0?'down':'up');
+});
+window.addEventListener('keydown',e=>{
+  if(e.key.includes('Arrow'))move(e.key.replace('Arrow','').toLowerCase());
+});
+</script>
+</body>
+</html>
