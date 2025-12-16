@@ -7,69 +7,106 @@
 
 <style>
 :root{
-  --bg:#faf8ef;
-  --board:#bbada0;
-  --tile:#cdc1b4;
-  --text:#776e65;
-  --btn:#8f7a66;
+  --card-bg: rgba(255,255,255,0.85);
+  --card-dark: rgba(30,30,30,0.85);
+  --btn:#ff9f43;
+  --btn2:#ff6b6b;
+  --text:#2d3436;
 }
-body.dark{
-  --bg:#121212;
-  --board:#1f1f1f;
-  --tile:#333;
-  --text:#fff;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+/* Animated Background */
 body{
-  background:var(--bg);
-  color:var(--text);
   min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
+  background:linear-gradient(-45deg,#6c5ce7,#00cec9,#fd79a8,#fab1a0);
+  background-size:400% 400%;
+  animation:bgMove 12s ease infinite;
+  font-family:Arial,sans-serif;
+  color:var(--text);
 }
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+body.dark{
+  background:linear-gradient(-45deg,#0f2027,#203a43,#2c5364,#1c1c1c);
+  background-size:400% 400%;
+}
+
+/* Common */
+*{margin:0;padding:0;box-sizing:border-box}
 .screen{
   display:none;
   width:100%;
   max-width:420px;
-  padding:20px;
-  text-align:center;
+  padding:22px;
 }
 .active{display:block}
-h1,h2{margin-bottom:20px}
+
+/* Glass Card */
+.card{
+  background:var(--card-bg);
+  backdrop-filter:blur(12px);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+body.dark .card{
+  background:var(--card-dark);
+  color:#fff;
+}
+
+/* Headings */
+h1,h2{text-align:center;margin-bottom:20px}
+
+/* Buttons */
 button{
   width:100%;
   padding:14px;
-  margin:8px 0;
+  margin:10px 0;
   border:none;
-  border-radius:8px;
-  background:var(--btn);
-  color:#fff;
+  border-radius:12px;
   font-size:16px;
   cursor:pointer;
+  background:linear-gradient(135deg,var(--btn),var(--btn2));
+  color:#fff;
+  transition:transform .2s,box-shadow .2s;
 }
+button:active{transform:scale(.97)}
+button:hover{box-shadow:0 10px 20px rgba(0,0,0,.25)}
+
+/* Top Bar */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 .topbar button{
   width:auto;
-  padding:6px 10px;
+  padding:8px 14px;
   font-size:14px;
 }
+
+/* Score Boxes */
 .scores{display:flex;gap:10px}
 .box{
-  background:var(--board);
-  padding:6px 10px;
-  border-radius:6px;
+  background:#2d3436;
   color:#fff;
-  font-size:14px;
-}
-.board{
-  background:var(--board);
+  padding:8px 14px;
   border-radius:10px;
+  font-size:14px;
+  text-align:center;
+}
+
+/* Board */
+.board{
+  background:#bbada0;
+  border-radius:16px;
   padding:10px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -79,8 +116,8 @@ button{
 .cell{
   width:100%;
   padding-top:100%;
-  background:var(--tile);
-  border-radius:6px;
+  background:#cdc1b4;
+  border-radius:12px;
   position:relative;
 }
 .tile{
@@ -92,11 +129,18 @@ button{
   font-size:26px;
   font-weight:bold;
   background:#eee4da;
-  border-radius:6px;
-  animation:pop .2s ease;
+  border-radius:12px;
+  animation:pop .15s ease;
 }
 @keyframes pop{0%{transform:scale(.8)}100%{transform:scale(1)}}
-.privacy{text-align:left;font-size:14px;line-height:1.6}
+
+/* Privacy Text */
+.privacy{font-size:14px;line-height:1.6}
+
+/* Responsive */
+@media(max-width:360px){
+  .tile{font-size:22px}
+}
 </style>
 </head>
 
@@ -104,64 +148,69 @@ button{
 
 <!-- Splash -->
 <div id="splash" class="screen active">
-  <h1>2048 Puzzle</h1>
-  <p>Loading...</p>
+  <div class="card">
+    <h1>2048 Puzzle</h1>
+    <p style="text-align:center">Loading...</p>
+  </div>
 </div>
 
 <!-- Menu -->
 <div id="menu" class="screen">
-  <h2>Main Menu</h2>
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="openPrivacy()">Privacy Policy</button>
-  <button onclick="toggleTheme()">Dark / Light</button>
+  <div class="card">
+    <h2>Main Menu</h2>
+    <button onclick="startGame()">Start Game</button>
+    <button onclick="openPrivacy()">Privacy Policy</button>
+    <button onclick="toggleTheme()">Dark / Light</button>
+  </div>
 </div>
 
 <!-- Game -->
 <div id="game" class="screen">
-  <div class="topbar">
-    <button onclick="goMenu()">⬅ Back</button>
-    <div class="scores">
-      <div class="box">Score<br><span id="score">0</span></div>
-      <div class="box">Best<br><span id="best">0</span></div>
+  <div class="card">
+    <div class="topbar">
+      <button onclick="goMenu()">⬅ Back</button>
+      <div class="scores">
+        <div class="box">Score<br><span id="score">0</span></div>
+        <div class="box">Best<br><span id="best">0</span></div>
+      </div>
     </div>
+    <div class="board" id="board"></div>
   </div>
-  <div class="board" id="board"></div>
 </div>
 
 <!-- Game Over -->
 <div id="gameover" class="screen">
-  <h2>Game Over</h2>
-  <p>Your Score</p>
-  <h1 id="finalScore">0</h1>
-  <button onclick="restartGame()">Play Again</button>
-  <button onclick="goMenu()">Main Menu</button>
+  <div class="card">
+    <h2>Game Over</h2>
+    <p>Your Score</p>
+    <h1 id="finalScore">0</h1>
+    <button onclick="restartGame()">Play Again</button>
+    <button onclick="goMenu()">Main Menu</button>
+  </div>
 </div>
 
-<!-- Privacy Policy -->
+<!-- Privacy -->
 <div id="privacy" class="screen">
-  <h2>Privacy Policy</h2>
-  <div class="privacy">
-    <p>This 2048 Puzzle game does not collect any personal information.</p>
-    <p>No login, no internet, no data sharing.</p>
-    <p>Scores are stored locally on device only.</p>
-    <p>This policy applies to the Android app version.</p>
+  <div class="card">
+    <h2>Privacy Policy</h2>
+    <div class="privacy">
+      <p>No personal data collected.</p>
+      <p>No login required.</p>
+       <p>Allow INTERNET Access</p>
+      <p>Scores saved locally only.</p>
+      <p>Applicable to Android app.</p>
+    </div>
+    <button onclick="goMenu()">Back</button>
   </div>
-  <button onclick="goMenu()">Back to Menu</button>
 </div>
 
 <script>
-const screens={
-  splash:document.getElementById('splash'),
-  menu:document.getElementById('menu'),
-  game:document.getElementById('game'),
-  gameover:document.getElementById('gameover'),
-  privacy:document.getElementById('privacy')
-};
+const screens={splash,menu,game,gameover,privacy};
 function show(id){
   Object.values(screens).forEach(s=>s.classList.remove('active'));
   screens[id].classList.add('active');
 }
-setTimeout(()=>show('menu'),1500);
+setTimeout(()=>show('menu'),1400);
 
 function startGame(){show('game');init()}
 function goMenu(){show('menu')}
@@ -180,8 +229,7 @@ function init(){
   grid=Array(16).fill(0);
   score=0;
   scoreEl.textContent=0;
-  addTile();addTile();
-  render();
+  addTile();addTile();render();
 }
 
 function addTile(){
@@ -254,7 +302,7 @@ function isGameOver(){
   return true;
 }
 
-function restartGame(){show('game');init();}
+function restartGame(){show('game');init()}
 
 let sx,sy;
 board.addEventListener('touchstart',e=>{
@@ -269,5 +317,6 @@ window.addEventListener('keydown',e=>{
   if(e.key.includes('Arrow'))move(e.key.replace('Arrow','').toLowerCase());
 });
 </script>
+
 </body>
 </html>
